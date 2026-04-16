@@ -14,108 +14,70 @@ export interface TokenEstimate {
 }
 
 /**
+ * Improved token estimation based on character and word density.
+ * divisor: average characters per token (usually ~4)
+ */
+function calculateHeuristic(text: string, divisor: number): number {
+  if (!text) return 0;
+  
+  const chars = text.length;
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const punctuation = (text.match(/[.,!?;:\(\)\[\]\{\}"'`\-]/g) || []).length;
+  
+  // Rule of thumb: tokens follow characters for simple English
+  // BUT special characters and dense code increase the count.
+  const baseTokens = chars / divisor;
+  
+  // Add weight for punctuation and line breaks
+  const weight = punctuation * 0.15;
+  
+  // For standard English, tokens are usually >= words
+  return Math.max(1, Math.ceil(baseTokens + weight));
+}
+
+/**
  * Estimates tokens based on character count
- * Average: ~4 characters per token across most models
  */
 export function estimateTokensByCharacters(text: string): number {
-  // General estimation: 1 token ≈ 4 characters
   return Math.ceil(text.length / 4);
 }
 
 /**
- * OpenAI token estimation
- * Based on GPT tokenizer patterns: words + punctuation weighted
+ * OpenAI token estimation (cl100k_base / p50k_base)
+ * Factor: ~3.7-4 chars per token
  */
 export function estimateOpenAITokens(text: string): number {
-  let tokens = 0;
-
-  // Count words (average 1.3 tokens per word for OpenAI)
-  const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
-  tokens += Math.ceil(words.length * 1.3);
-
-  // Add extra tokens for punctuation and special characters
-  const specialChars = text.match(/[.,!?;:\(\)\[\]\{\}"'`\-]/g) || [];
-  tokens += Math.ceil(specialChars.length * 0.5);
-
-  // Add tokens for newlines and formatting
-  const newlines = (text.match(/\n/g) || []).length;
-  tokens += newlines * 1;
-
-  // Add a small buffer for subword tokens
-  tokens += Math.ceil(text.length / 15);
-
-  return Math.max(1, tokens);
+  return calculateHeuristic(text, 3.8);
 }
 
 /**
  * Anthropic token estimation
- * Anthropic uses a similar but slightly different tokenization scheme
+ * Factor: ~3.5 chars per token (Claude tend to be slightly more dense)
  */
 export function estimateAnthropicTokens(text: string): number {
-  let tokens = 0;
-
-  // Words (Anthropic: ~1.2 tokens per word on average)
-  const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
-  tokens += Math.ceil(words.length * 1.2);
-
-  // Characters (Anthropic handles some characters differently)
-  tokens += Math.ceil(text.length / 5);
-
-  // Newlines
-  const newlines = (text.match(/\n/g) || []).length;
-  tokens += newlines * 1;
-
-  return Math.max(1, tokens);
+  return calculateHeuristic(text, 3.4);
 }
 
 /**
  * Gemini token estimation
- * Google Gemini tokenization characteristics
+ * Factor: ~4 chars per token
  */
 export function estimateGeminiTokens(text: string): number {
-  let tokens = 0;
-
-  // Words (Gemini: ~1.25 tokens per word)
-  const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
-  tokens += Math.ceil(words.length * 1.25);
-
-  // Characters
-  tokens += Math.ceil(text.length / 4.5);
-
-  // Special handling for punctuation
-  const punctuation = (text.match(/[.!?,;:]/g) || []).length;
-  tokens += Math.ceil(punctuation * 0.8);
-
-  return Math.max(1, tokens);
+  return calculateHeuristic(text, 4.0);
 }
 
 /**
  * Ollama token estimation (local models)
- * Typically uses similar tokenization to OpenAI models
  */
 export function estimateOllamaTokens(text: string): number {
-  // Ollama uses similar tokenization to OpenAI
-  return estimateOpenAITokens(text);
+  return calculateHeuristic(text, 3.8);
 }
 
 /**
  * General token estimation (best effort)
  */
 export function estimateGeneralTokens(text: string): number {
-  let tokens = 0;
-
-  // Average of ~1.2 tokens per word (universal average)
-  const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
-  tokens += Math.ceil(words.length * 1.2);
-
-  // Character-based estimation
-  tokens += Math.ceil(text.length / 4);
-
-  // Newlines
-  const newlines = (text.match(/\n/g) || []).length;
-  tokens += newlines;
-
-  return Math.max(1, tokens);
+  return calculateHeuristic(text, 3.8);
 }
 
 /**
@@ -141,6 +103,7 @@ export function estimateTokens(
       return estimateGeneralTokens(text);
   }
 }
+
 
 /**
  * Calculate all token estimates for a given text and estimated output tokens

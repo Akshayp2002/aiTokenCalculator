@@ -129,7 +129,7 @@ export function TokenCalculator({
           <p className='text-2xl font-bold text-purple-500'>
             {formatNumber(tokens)}
           </p>
-          <p className='text-xs text-muted-foreground mt-1'>Tokens</p>
+          <p className='text-xs text-muted-foreground mt-1'>Est. Tokens</p>
         </div>
       </motion.div>
     </div>
