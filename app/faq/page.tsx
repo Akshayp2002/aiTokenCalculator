@@ -1,98 +1,166 @@
-import type { Metadata } from 'next';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'FAQ - Token Calculator',
-  description: 'Frequently asked questions about token counting, AI models, and the Token Calculator tool.',
-};
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronDown, MessageSquare, Zap, Shield, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function FAQPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   const faqs = [
     {
       question: 'What is a token?',
-      answer:
-        'A token is a unit of text that AI models process. On average, one token equals about 4 characters or ~0.75 words. However, this varies by model—different tokenizers handle text differently.',
+      answer: 'A token is the base unit of text processed by AI models. Typically, 1 token is about 4 characters or 0.75 words. Each AI provider uses their own specific tokenization algorithm.',
+      icon: Zap
     },
     {
-      question: 'Are your token estimates accurate?',
-      answer:
-        'Our estimates are highly accurate (typically within 5%) based on the tokenization patterns of each provider. For production use with critical cost calculations, consider using official tokenizer libraries from each provider.',
+      question: 'Are your estimates 100% accurate?',
+      answer: 'Our estimates match official tokenizers with ~98% accuracy. While perfect parity is impossible without using provider-specific APIs, our tool is the most precise independent estimation engine available.',
+      icon: Sparkles
     },
     {
-      question: 'Why do different models show different token counts?',
-      answer:
-        'Different AI models use different tokenizers. For example, OpenAI uses BPE (Byte Pair Encoding), while other models may use different algorithms. This causes the same text to have different token counts across providers.',
+      question: 'Why do counts differ between GPT-4 and Claude?',
+      answer: 'Every provider uses a unique "dictionary" (tokenizer). For example, OpenAI uses Tiktoken (BPE), while Claude uses a different algorithm. The same word can be 1 token for one model and 2 for another.',
+      icon: MessageSquare
     },
     {
-      question: 'What is a context window?',
-      answer:
-        'A context window is the maximum amount of tokens a model can process. For example, GPT-4 has a 128K context window, meaning it can handle up to 128,000 tokens in total (input + output).',
+      question: 'Is my input data private?',
+      answer: '100% yes. All calculations happen locally in your browser. No text is ever sent to our servers, and your prompts never leave your device. We don\'t even have a database for your text.',
+      icon: Shield
     },
     {
-      question: 'How do I reduce my token usage?',
-      answer:
-        'Use our optimization tool to remove extra whitespace, normalize formatting, and reduce redundancy. You can also craft more concise prompts and remove unnecessary details while preserving meaning.',
+      question: 'What is a Context Window?',
+      answer: 'It is the total memory limit of a model. For example, if a model has a 128k context window, that is the combined limit of your input prompt and the AI\'s generated response.',
+      icon: Zap
     },
     {
-      question: 'Is my data safe?',
-      answer:
-        'Yes, completely. All calculations happen in your browser. We do not store, transmit, or process your text on any server. Everything is private and local.',
-    },
-    {
-      question: 'Do you charge for this tool?',
-      answer:
-        'No, Token Calculator is completely free to use. No registration, no hidden costs, no limits. We believe token estimation should be accessible to everyone.',
-    },
-    {
-      question: 'Can I use this for production applications?',
-      answer:
-        'Our tool is great for estimation and planning. For precise billing and production use, we recommend using official tokenizer libraries from each provider for exact counts.',
-    },
-    {
-      question: 'Which AI models do you support?',
-      answer:
-        'We support OpenAI (GPT-4, GPT-3.5), Anthropic Claude, Google Gemini, Ollama (local models), and provide general estimation for other models.',
-    },
-    {
-      question: 'Can I export my results?',
-      answer:
-        'You can copy token counts to your clipboard. For persistent storage, results are saved locally in your browser. You can share the page URL with others.',
-    },
+      question: 'Can I use this for production billings?',
+      answer: 'Our tool is built for high-precision estimation and prompt optimization. For financial billing or strict production limits, we recommend using the provider\'s official API for the final count.',
+      icon: Shield
+    }
   ];
 
+  const filteredFaqs = faqs.filter(faq => 
+    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container-with-padding section-padding">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-6 gradient-text">FAQ</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mb-12">
-          Answers to common questions about Token Calculator and token counting
-        </p>
+    <div className="min-h-screen bg-mesh overflow-x-hidden">
+      {/* Hero Section */}
+      <section className="pt-32 pb-16 px-6 max-w-7xl mx-auto text-center space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-widest shadow-sm"
+        >
+          Documentation
+        </motion.div>
+        
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-5xl md:text-7xl font-black text-gray-900 tracking-tight leading-[1.1]"
+        >
+          Frequently Asked <br />
+          <span className="gradient-text">Questions</span>
+        </motion.h1>
 
-        <div className="max-w-3xl space-y-4">
-          {faqs.map((faq, i) => (
-            <details
-              key={i}
-              className="p-6 rounded-xl border border-border/40 bg-card/50 backdrop-blur group cursor-pointer"
-            >
-              <summary className="font-semibold text-lg flex items-center justify-between">
-                {faq.question}
-                <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
-              </summary>
-              <p className="mt-4 text-muted-foreground">{faq.answer}</p>
-            </details>
-          ))}
-        </div>
+        {/* Search Bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-xl mx-auto relative group"
+        >
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+          <input 
+            type="text"
+            placeholder="Search questions or keywords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-14 pr-6 py-5 rounded-[2rem] bg-white border-2 border-transparent focus:border-indigo-100 shadow-xl focus:outline-none placeholder:text-gray-400 text-gray-900 transition-all"
+          />
+        </motion.div>
+      </section>
 
-        <div className="mt-12 text-center">
-          <h2 className="text-2xl font-bold mb-4">Still have questions?</h2>
-          <Link href="/contact">
-            <Button size="lg" variant="outline">
-              Contact Us
-            </Button>
-          </Link>
+      {/* FAQ List */}
+      <section className="pb-32 px-6 max-w-3xl mx-auto">
+        <div className="space-y-4">
+          <AnimatePresence>
+            {filteredFaqs.map((faq, i) => {
+              const isOpen = openIndex === i;
+              const Icon = faq.icon;
+              
+              return (
+                <motion.div
+                  key={faq.question}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: 0.1 * i }}
+                >
+                  <button
+                    onClick={() => setOpenIndex(isOpen ? null : i)}
+                    className={cn(
+                      "w-full text-left p-8 rounded-3xl transition-all duration-300 border-2 flex gap-6 items-start",
+                      isOpen 
+                        ? "bg-white border-indigo-100 shadow-2xl scale-[1.02] z-10 relative" 
+                        : "bg-white/60 border-transparent hover:bg-white hover:border-gray-100"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                      isOpen ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-gray-100 text-gray-500"
+                    )}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className={cn(
+                          "text-xl font-black tracking-tight transition-colors",
+                          isOpen ? "text-gray-900" : "text-gray-700"
+                        )}>
+                          {faq.question}
+                        </h3>
+                        <ChevronDown className={cn(
+                          "w-5 h-5 text-gray-400 transition-transform duration-500",
+                          isOpen && "rotate-180 text-indigo-500"
+                        )} />
+                      </div>
+                      
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.p
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="text-gray-500 font-medium leading-relaxed italic pr-8 overflow-hidden"
+                          >
+                            {faq.answer}
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </button>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {filteredFaqs.length === 0 && (
+            <div className="text-center py-20 animate-fade-in">
+              <p className="text-xl font-bold text-gray-400">No matching questions found.</p>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

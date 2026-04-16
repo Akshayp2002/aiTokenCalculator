@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Zap, Sparkles, Lock, Gauge, Code2, ArrowRight, ChevronRight, Cpu, Database, Shield, Bolt } from 'lucide-react';
+import { Zap, Sparkles, Lock, Gauge, Code2, ArrowRight, ChevronRight, Cpu, Database, Shield, Bolt, FileText, Layers, Activity } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function Home() {
@@ -267,19 +268,22 @@ export default function Home() {
           HOW IT WORKS
           ============================================================ */}
       <section id="how" className="py-28 px-6 bg-mesh relative overflow-hidden">
-        <div className="max-w-7xl mx-auto space-y-16">
+        <div className="max-w-7xl mx-auto space-y-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
-            className="text-center space-y-4 max-w-2xl mx-auto"
+            className="text-center space-y-5 max-w-2xl mx-auto"
           >
-            <p className="text-sm font-semibold tracking-widest text-indigo-500 uppercase">How It Works</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-widest shadow-sm">
+              <Zap className="w-3 h-3" /> Process
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight leading-tight">
               Simple as{' '}
               <span
+                className="inline-block"
                 style={{
-                  background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)',
+                  background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -288,67 +292,92 @@ export default function Home() {
                 1 — 2 — 3
               </span>
             </h2>
-            <p className="text-lg text-gray-500">Fast, accurate, and totally free token counting in seconds.</p>
+            <p className="text-lg text-gray-500 font-medium">Fast, accurate, and totally free token counting in seconds.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connecting lines */}
-            <div className="hidden md:block absolute top-16 left-[33%] right-[33%] h-0.5 bg-gradient-to-r from-indigo-200 via-violet-200 to-cyan-200" />
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            {/* Connecting lines - modern dash */}
+            <div className="hidden md:block absolute top-[28%] left-[25%] right-[25%] h-px border-t-2 border-dashed border-gray-200" />
 
             {[
-              { step: '01', title: 'Paste Your Prompt', desc: 'Enter or paste any text — a prompt, system message, conversation, or code snippet.', emoji: '📝', color: 'from-indigo-500 to-indigo-600' },
-              { step: '02', title: 'Select Your Model', desc: 'Choose from OpenAI GPT-4, Claude, Gemini, or any of 20+ supported providers.', emoji: '🤖', color: 'from-violet-500 to-violet-600' },
-              { step: '03', title: 'See Results Instantly', desc: 'Get token count, context usage, and cost estimate displayed in real time.', emoji: '⚡', color: 'from-cyan-500 to-cyan-600' },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15, type: 'spring', stiffness: 120 }}
-                viewport={{ once: true, margin: '-80px' }}
-                className="relative"
-              >
+              { 
+                step: '01', 
+                title: 'Paste Your Prompt', 
+                desc: 'Enter your text — prompt, code, or message. Everything stays private in your browser.', 
+                icon: FileText, 
+                color: 'from-indigo-500 to-indigo-600',
+                glow: 'rgba(99,102,241,0.2)'
+              },
+              { 
+                step: '02', 
+                title: 'Select Your Model', 
+                desc: 'Choose from OpenAI, Claude, Gemini, or 20+ other supported AI providers.', 
+                icon: Layers, 
+                color: 'from-violet-500 to-violet-600',
+                glow: 'rgba(139,92,246,0.2)'
+              },
+              { 
+                step: '03', 
+                title: 'Instant Analysis', 
+                desc: 'See live results for token counts, context window usage, and estimated costs.', 
+                icon: Activity, 
+                color: 'from-cyan-500 to-cyan-600',
+                glow: 'rgba(6,182,212,0.2)'
+              },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
                 <motion.div
-                  whileHover={{ y: -8 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                  className="glass-card p-8 h-full"
+                  key={i}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2, type: 'spring', stiffness: 100 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  className="relative group"
                 >
-                  {/* Step number */}
-                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} text-white font-black text-lg shadow-lg mb-6`}>
-                    {item.step}
+                  <div className="relative z-10 glass-card p-10 h-full flex flex-col items-center text-center transition-all duration-300 hover:shadow-2xl"
+                       style={{ background: 'rgba(255,255,255,0.8)' }}>
+                    
+                    {/* Step number background */}
+                    <div className="absolute top-6 right-8 text-7xl font-black text-gray-100/50 select-none group-hover:text-indigo-50 transition-colors">
+                      {item.step}
+                    </div>
+
+                    <div className={cn(
+                      "w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white shadow-xl mb-8 relative",
+                      item.color
+                    )}>
+                      <Icon className="w-8 h-8" strokeWidth={2.5} />
+                      <div className="absolute inset-0 rounded-2xl blur-xl opacity-40 animate-pulse" style={{ backgroundColor: item.glow }} />
+                    </div>
+
+                    <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight group-hover:text-indigo-600 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-500 font-medium leading-relaxed italic">
+                      {item.desc}
+                    </p>
                   </div>
-
-                  <motion.div
-                    animate={{ rotate: [0, 8, -8, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, delay: i * 0.6 }}
-                    className="text-4xl mb-4"
-                  >
-                    {item.emoji}
-                  </motion.div>
-
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{item.desc}</p>
                 </motion.div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Bottom CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="text-center pt-8"
           >
             <Link href="/calculator">
               <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.96 }}
-                className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl text-white font-bold text-lg shadow-xl shadow-indigo-500/30 transition-all"
+                className="inline-flex items-center gap-3 px-12 py-5 rounded-3xl text-white font-black text-xl shadow-[0_20px_40px_rgba(99,102,241,0.3)] transition-all"
                 style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
               >
-                Try It Free Now
-                <ArrowRight className="w-5 h-5" />
+                Launch Calculator Now
+                <ArrowRight className="w-6 h-6" />
               </motion.button>
             </Link>
           </motion.div>
