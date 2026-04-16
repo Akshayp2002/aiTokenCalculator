@@ -1,13 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Zap, TrendingUp, Gauge, AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
+import { Zap, TrendingUp, Gauge, AlertCircle, CheckCircle, DollarSign, Download, Copy, Share2, FileText } from 'lucide-react';
 import { MetricsCard } from './metrics-card';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getContextWindowStatus, Provider, estimateTokens } from '@/lib/tokenizer';
-import { formatNumber } from '@/lib/utils';
+import { getContextWindowStatus, Provider, estimateTokens, PROVIDERS } from '@/lib/tokenizer';
+import { formatNumber, copyToClipboard } from '@/lib/utils';
+import { useState } from 'react';
 
 interface ResultsPanelProps {
   text: string;
@@ -61,6 +62,62 @@ export function ResultsPanel({
 
   const status = statusConfig[contextStatus];
   const StatusIcon = status.icon;
+
+  const [exporting, setExporting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const generateReport = () => {
+    const providerName = PROVIDERS[provider]?.name || provider;
+    return `AI TOKEN ANALYSIS REPORT
+-------------------------
+Generated: ${new Date().toLocaleString()}
+Provider: ${providerName}
+
+METRICS:
+- Input Tokens: ${formatNumber(inputTokens)}
+- Expected Output: ${formatNumber(outputTokens)}
+- Total Tokens: ${formatNumber(totalTokens)}
+- Context Window: ${formatNumber(contextWindow)}
+
+USAGE:
+- Capacity Used: ${Math.round(usagePercentage)}%
+- Status: ${status.label}
+
+NOTE: These are high-precision estimates based on modern BPE tokenization trends.
+-------------------------
+TokenCalc — Premium AI Analytics`;
+  };
+
+  const handleCopyReport = async () => {
+    try {
+      setCopied(true);
+      await copyToClipboard(generateReport());
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+  };
+
+  const handleDownload = () => {
+    try {
+      setExporting(true);
+      const report = generateReport();
+      const blob = new Blob([report], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tokenCalc-analysis-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setTimeout(() => setExporting(false), 1500);
+    } catch (err) {
+      console.error('Download failed:', err);
+      setExporting(false);
+    }
+  };
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -251,6 +308,54 @@ export function ResultsPanel({
             placeholder="Custom output tokens..."
           />
         </div>
+      </motion.div>
+
+      {/* Export & Snapshot Section */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-2xl border-2 border-dashed border-gray-200 p-6 space-y-5 group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all duration-500"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-gray-900 border border-gray-800">
+              <Share2 className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 text-sm">Export Analysis</h3>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Capture Snapshot</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <motion.button
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCopyReport}
+            className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all group/btn"
+          >
+            <div className="p-3 rounded-full bg-indigo-50 text-indigo-600 group-hover/btn:bg-indigo-600 group-hover/btn:text-white transition-colors">
+              {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+            </div>
+            <span className="text-xs font-black text-gray-700">{copied ? 'Copied' : 'Copy Report'}</span>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleDownload}
+            className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-emerald-100 transition-all group/btn"
+          >
+            <div className="p-3 rounded-full bg-emerald-50 text-emerald-600 group-hover/btn:bg-emerald-600 group-hover/btn:text-white transition-colors">
+              {exporting ? <CheckCircle className="w-5 h-5" /> : <Download className="w-5 h-5" />}
+            </div>
+            <span className="text-xs font-black text-gray-700">{exporting ? 'Saved' : 'Download Result'}</span>
+          </motion.button>
+        </div>
+
+        <p className="text-[10px] text-center text-gray-400 font-medium italic">
+          Generate a detailed breakdown for documentation or sharing.
+        </p>
       </motion.div>
     </motion.div>
   );
